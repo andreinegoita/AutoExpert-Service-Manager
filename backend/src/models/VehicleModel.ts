@@ -13,11 +13,13 @@ export class VehicleModel {
         return result.rows;
     }
 
-    static async create(userId: number, modelId: number, vin: string, plate: string, year: number) {
-        const result = await pool.query(
-            'INSERT INTO vehicles (owner_id, model_id, vin, plate_number, manufacture_year) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [userId, modelId, vin, plate, year]
-        );
+    static async create(userId: number, modelId: number, vin: string, plate: string, year: number, imageUrl?: string) {
+        const query = `
+            INSERT INTO vehicles (owner_id, model_id, vin, plate_number, manufacture_year, image_url) 
+            VALUES ($1, $2, $3, $4, $5, $6) 
+            RETURNING *
+        `;
+        const result = await pool.query(query, [userId, modelId, vin, plate, year, imageUrl || null]);
         return result.rows[0];
     }
 }

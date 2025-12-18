@@ -22,7 +22,7 @@ export const addVehicle = async (req: AuthRequest, res: Response) => {
             return res.status(401).json({ message: 'Neautorizat' });
         }
 
-        const { modelId, vin, plate, year } = req.body;
+        const { modelId, vin, plate, year, image_url } = req.body;
 
         if (vin.length !== 17) {
             throw new ValidationException("VIN invalid (trebuie 17 caractere)");
@@ -33,7 +33,8 @@ export const addVehicle = async (req: AuthRequest, res: Response) => {
             modelId,
             vin,
             plate,
-            year
+            year,
+            image_url
         );
 
         res.status(201).json(newVehicle);
