@@ -1,12 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { BlurText } from './components/animations/BlurText';
-import { Car, ShieldCheck, Wrench } from 'lucide-react'; // Iconițe
+import { Car, ShieldCheck, Wrench } from 'lucide-react'; 
+import { AuthProvider } from './context/AuthContext';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       
-      {/* Background Image cu Overlay */}
       <div className="absolute inset-0 z-0">
         <img 
           src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1920&auto=format&fit=crop" 
@@ -78,14 +80,16 @@ const FeatureCard = ({ icon, title, desc }: any) => (
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<div className="p-10">Login Page (WIP)</div>} />
-        <Route path="/register" element={<div className="p-10">Register Page (WIP)</div>} />
-      </Routes>
-    </Router>
+    <AuthProvider> 
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<div className="text-white p-10 text-3xl">Bine ai venit în Dashboard! (Urmează...)</div>} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
-
 export default App;
