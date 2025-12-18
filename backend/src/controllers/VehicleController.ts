@@ -41,3 +41,4 @@ export const addVehicle = async (req: AuthRequest, res: Response) => {
         res.status(err.statusCode || 500).json({ error: err.message });
     }
 };
+
