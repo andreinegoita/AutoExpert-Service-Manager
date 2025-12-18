@@ -10,3 +10,9 @@ export class ValidationException extends AppError {
         super(400, `Validation Error: ${message}`);
     }
 }
+
+export class NotFoundException extends AppError {
+    constructor(resource: string) {
+        super(404, `${resource} was not found.`);
+    }
+}
