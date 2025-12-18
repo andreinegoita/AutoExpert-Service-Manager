@@ -4,8 +4,10 @@ import { addVehicle, getVehicles } from '../controllers/VehicleController';
 import { createAppointment, getMyAppointments } from '../controllers/AppointmentController';
 import { getBrands, getModels, getServices } from '../controllers/DataController';
 import { protect } from '../middleware/authMiddleware';
+import { getDashboardStats } from '../controllers/StatsControlles';
 
 const router = Router();
+
 
 router.post('/auth/register', register);
 router.post('/auth/login', login);
@@ -20,4 +22,5 @@ router.get('/services', getServices);
 router.get('/brands', getBrands);     
 router.get('/models/:brandId', getModels); 
 
+router.get('/dashboard/stats', protect, getDashboardStats);
 export default router;
