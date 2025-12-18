@@ -8,6 +8,8 @@ import { Dashboard } from "./pages/Dashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { NotFound } from "./pages/NotFound";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { Background } from "./components/Background";
+import { Toaster } from "react-hot-toast"; 
 
 const LandingPage = () => {
   return (
@@ -90,7 +92,10 @@ const FeatureCard = ({ icon, title, desc }: any) => (
 function App() {
   return (
     <AuthProvider>
+      <Background />
+      
       <Router>
+        <Toaster position="top-right" reverseOrder={false} />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -117,4 +122,5 @@ function App() {
     </AuthProvider>
   );
 }
+
 export default App;
