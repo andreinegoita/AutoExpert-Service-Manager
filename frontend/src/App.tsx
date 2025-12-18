@@ -4,6 +4,7 @@ import { Car, ShieldCheck, Wrench } from 'lucide-react';
 import { AuthProvider } from './context/AuthContext';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { Dashboard } from './pages/Dashboard';
 
 const LandingPage = () => {
   return (
@@ -86,7 +87,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<div className="text-white p-10 text-3xl">Bine ai venit în Dashboard! (Urmează...)</div>} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Router>
     </AuthProvider>
