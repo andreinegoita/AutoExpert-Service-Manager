@@ -39,5 +39,5 @@ router.get('/services', getServices);
 router.get('/brands', getBrands);     
 router.get('/models/:brandId', getModels); 
 
-router.get('/dashboard/stats', protect, getDashboardStats);
+router.get('/dashboard-stats', protect, getDashboardStats);
 export default router;
