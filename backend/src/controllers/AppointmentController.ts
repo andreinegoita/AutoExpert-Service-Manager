@@ -4,8 +4,19 @@ import { AppointmentModel } from '../models/AppointmentModel';
 
 export const createAppointment = async (req: AuthRequest, res: Response) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Neautorizat' });
+        }
+
         const { vehicleId, serviceId, date, notes } = req.body;
-        const appointment = await AppointmentModel.create(vehicleId, serviceId, date, notes);
+
+        const appointment = await AppointmentModel.create(
+            vehicleId,
+            serviceId,
+            date,
+            notes
+        );
+
         res.status(201).json(appointment);
     } catch (err: any) {
         res.status(500).json({ error: 'Database error: ' + err.message });
@@ -14,6 +25,10 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
 
 export const getMyAppointments = async (req: AuthRequest, res: Response) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Neautorizat' });
+        }
+
         const appointments = await AppointmentModel.getAllByOwner(req.user.id);
         res.json(appointments);
     } catch (err) {
