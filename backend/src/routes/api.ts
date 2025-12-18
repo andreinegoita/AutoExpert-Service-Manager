@@ -5,6 +5,8 @@ import { createAppointment, getMyAppointments } from '../controllers/Appointment
 import { getBrands, getModels, getServices } from '../controllers/DataController';
 import { protect } from '../middleware/authMiddleware';
 import { getDashboardStats } from '../controllers/StatsControlles';
+import { getAllUsers, getAllAppointments, updateAppointmentStatus } from '../controllers/AdminController';
+import { adminOnly } from '../middleware/authMiddleware';
 import multer from 'multer';
 import path from 'path';
 
@@ -40,4 +42,8 @@ router.get('/brands', getBrands);
 router.get('/models/:brandId', getModels); 
 
 router.get('/dashboard-stats', protect, getDashboardStats);
+
+router.get('/admin/users', protect, adminOnly, getAllUsers);
+router.get('/admin/appointments', protect, adminOnly, getAllAppointments);
+router.patch('/admin/appointments/:id', protect, adminOnly, updateAppointmentStatus);
 export default router;

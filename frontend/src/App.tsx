@@ -1,21 +1,21 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { BlurText } from './components/animations/BlurText';
-import { Car, ShieldCheck, Wrench } from 'lucide-react'; 
-import { AuthProvider } from './context/AuthContext';
-import { Login } from './pages/Login';
-import { Register } from './pages/Register';
-import { Dashboard } from './pages/Dashboard';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { NotFound } from './pages/NotFound';
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BlurText } from "./components/animations/BlurText";
+import { Car, ShieldCheck, Wrench } from "lucide-react";
+import { AuthProvider } from "./context/AuthContext";
+import { Login } from "./pages/Login";
+import { Register } from "./pages/Register";
+import { Dashboard } from "./pages/Dashboard";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { NotFound } from "./pages/NotFound";
+import { AdminDashboard } from "./pages/AdminDashboard";
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
-      
       <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1920&auto=format&fit=crop" 
-          alt="Luxury Car" 
+        <img
+          src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1920&auto=format&fit=crop"
+          alt="Luxury Car"
           className="w-full h-full object-cover opacity-40"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-transparent"></div>
@@ -26,10 +26,16 @@ const LandingPage = () => {
           AutoExpert
         </div>
         <div className="space-x-4">
-          <Link to="/login" className="px-6 py-2 rounded-full border border-gray-600 hover:bg-white/10 transition">
+          <Link
+            to="/login"
+            className="px-6 py-2 rounded-full border border-gray-600 hover:bg-white/10 transition"
+          >
             Autentificare
           </Link>
-          <Link to="/register" className="px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-700 transition font-medium">
+          <Link
+            to="/register"
+            className="px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-700 transition font-medium"
+          >
             Înregistrare
           </Link>
         </div>
@@ -39,10 +45,10 @@ const LandingPage = () => {
         <div className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
           <BlurText text="Management Auto Profesional" delay={0.2} />
         </div>
-        
+
         <p className="text-gray-400 text-xl max-w-2xl mb-10 animate-pulse">
-          Platforma completă pentru gestionarea flotei tale. 
-          Service, istoric și programări la un click distanță.
+          Platforma completă pentru gestionarea flotei tale. Service, istoric și
+          programări la un click distanță.
         </p>
 
         <div className="flex gap-4">
@@ -52,17 +58,17 @@ const LandingPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 w-full max-w-5xl">
-          <FeatureCard 
+          <FeatureCard
             icon={<Car className="w-8 h-8 text-blue-400" />}
             title="Garaj Digital"
             desc="Ține evidența tuturor mașinilor tale într-un singur loc."
           />
-          <FeatureCard 
+          <FeatureCard
             icon={<Wrench className="w-8 h-8 text-purple-400" />}
             title="Service Rapid"
             desc="Programează-te la service direct din aplicație."
           />
-          <FeatureCard 
+          <FeatureCard
             icon={<ShieldCheck className="w-8 h-8 text-green-400" />}
             title="Istoric Sigur"
             desc="Toate reparațiile și costurile sunt salvate criptat."
@@ -89,13 +95,21 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

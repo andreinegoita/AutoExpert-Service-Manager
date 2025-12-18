@@ -23,7 +23,7 @@ export const login = async (req: Request, res: Response) => {
         }
 
         const token = jwt.sign({ id: user.id, role: user.role_id }, process.env.JWT_SECRET as string, { expiresIn: '2h' });
-        res.json({ token, user: { id: user.id, name: user.full_name } });
+        res.json({ token, user: { id: user.id, name: user.full_name, role_id: user.role_id } });
     } catch (err) {
         res.status(500).json({ error: 'Eroare server' });
     }

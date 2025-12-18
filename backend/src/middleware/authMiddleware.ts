@@ -1,37 +1,51 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { AuthRequest } from '../interfaces/AppInterfaces';
-import { JwtPayload } from 'jsonwebtoken';
+import { pool } from '../config/db';
+import { AuthRequest } from '../interfaces/AppInterfaces'; // Asigură-te că importul e corect
 
-interface JwtUserPayload extends JwtPayload {
-    id: number;
-    role_id: number;
-}
+export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    let token;
 
-export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            token = req.headers.authorization.split(' ')[1];
+            
+            const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'Neautorizat' });
+            // AICI ERA PROBLEMA! Am adăugat "role_id" în SELECT
+            // 👇👇👇
+            const result = await pool.query(
+                'SELECT id, full_name, email, role_id FROM users WHERE id = $1', 
+                [decoded.id]
+            );
+
+            if (result.rows.length === 0) {
+                return res.status(401).json({ message: 'Utilizatorul nu mai există.' });
+            }
+
+            // Atașăm utilizatorul complet (inclusiv role_id) la cerere
+            req.user = result.rows[0];
+            next();
+
+        } catch (error) {
+            console.error(error);
+            res.status(401).json({ message: 'Token invalid, autorizare eșuată.' });
+        }
     }
 
-    const token = authHeader.split(' ')[1];
-
-    try {
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET as string
-        ) as JwtUserPayload;
-
-        req.user = {
-            id: decoded.id,
-            role_id: decoded.role_id
-        };
-
-        next();
-    } catch (error) {
-        return res.status(403).json({ message: 'Token invalid' });
+    if (!token) {
+        res.status(401).json({ message: 'Nu există token, autorizare refuzată.' });
     }
 };
-export { AuthRequest };
 
+export const adminOnly = (req: AuthRequest, res: Response, next: NextFunction) => {
+    console.log("🕵️ ADMIN CHECK - User primit:", req.user); 
+
+    if (req.user && req.user.role_id === 1) {
+        next();
+    } else {
+        res.status(403).json({ message: 'Acces interzis. Doar pentru administratori.' });
+    }
+};
+
+export { AuthRequest };
