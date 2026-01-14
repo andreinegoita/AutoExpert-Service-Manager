@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { login, register } from '../controllers/AuthController';
-import { addVehicle, getVehicles, deleteVehicle } from '../controllers/VehicleController';
+import { addVehicle, getVehicles, deleteVehicle, updateVehicle } from '../controllers/VehicleController';
 import { createAppointment, getMyAppointments } from '../controllers/AppointmentController';
 import { getBrands, getModels, getServices } from '../controllers/DataController';
 import { protect } from '../middleware/authMiddleware';
@@ -35,18 +35,21 @@ router.post('/vehicles', protect, upload.single('image'), async (req: any, res: 
     addVehicle(req, res);
 });
 router.delete('/vehicles/:id', protect, deleteVehicle);
+router.put('/vehicles/:id', protect, upload.single('image'), updateVehicle);
 
 router.post('/appointments', protect, createAppointment);
 router.get('/appointments', protect, getMyAppointments);
 
 router.get('/services', getServices); 
 router.get('/brands', getBrands);     
-router.get('/models/:brandId', getModels); 
+router.get('/models/:brandId', getModels);  
 
 router.get('/dashboard-stats', protect, getDashboardStats);
 
 router.get('/admin/users', protect, adminOnly, getAllUsers);
 router.get('/admin/appointments', protect, adminOnly, getAllAppointments);
 router.patch('/admin/appointments/:id', protect, adminOnly, updateAppointmentStatus);
+
+
 
 export default router;

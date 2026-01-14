@@ -7,6 +7,7 @@ import { CarCarousel } from "../components/CarCarousel";
 import { Modal } from "../components/Modal";
 import { AddVehicleForm } from "../components/forms/AddVehicleForm";
 import { BookServiceForm } from "../components/forms/BookServiceForm";
+import { VehicleDetailsModal } from "../pages/VehicleDetailsModal"; 
 import {
   BarChart,
   Bar,
@@ -25,6 +26,7 @@ import {
   Calendar,
   RefreshCcw,
   LogOut,
+  Eye, 
 } from "lucide-react";
 import { PageTransition } from "../components/PageTransitions";
 
@@ -39,6 +41,8 @@ export const Dashboard = () => {
 
   const [isAddCarOpen, setIsAddCarOpen] = useState(false);
   const [isBookServiceOpen, setIsBookServiceOpen] = useState(false);
+  
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
 
   const handleLogout = () => {
     logout();
@@ -74,27 +78,18 @@ export const Dashboard = () => {
   };
 
   const handleDeleteCar = async (id: number) => {
-    // 1. ADAUGĂ LINIA ASTA:
-    console.log("ID-ul primit pentru ștergere este:", id); 
-
-    if (!id) {
-        alert("Eroare: ID-ul este invalid (undefined)!");
-        return;
-    }
-
     if (!window.confirm("Sigur vrei să ștergi această mașină?")) return;
-    
     try {
-      // Verifică URL-ul aici. Să nu ai un spațiu în plus.
       await axios.delete(`http://localhost:5000/api/vehicles/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchData();
     } catch (err) {
-      console.error(err); // Vezi eroarea completă în consolă
+      console.error(err);
       alert("Nu s-a putut șterge mașina.");
     }
   };
+
   useEffect(() => {
     fetchData();
   }, [token]);
@@ -139,8 +134,6 @@ export const Dashboard = () => {
               onClick={() => setIsAddCarOpen(true)}
               className="relative overflow-hidden bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all duration-300 font-medium shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:shadow-[0_0_30px_rgba(37,99,235,0.8)]"
             >
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
-
               <Plus size={18} className="relative z-10" />
               <span className="relative z-10">Adaugă Mașină</span>
             </button>
@@ -240,6 +233,7 @@ export const Dashboard = () => {
                           <img
                             src={`http://localhost:5000${car.image_url}`}
                             className="w-full h-full object-cover"
+                            alt="Car"
                           />
                         ) : (
                           <Car size={20} />
@@ -261,13 +255,25 @@ export const Dashboard = () => {
                       {car.vin}
                     </td>
                     <td className="p-4">{car.manufacture_year}</td>
+                    
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => handleDeleteCar(car.id)}
-                        className="p-2 text-gray-500 hover:text-red-400 transition"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setSelectedVehicle(car)}
+                          className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition"
+                          title="Vezi Detalii"
+                        >
+                          <Eye size={18} />
+                        </button>
+                        
+                        <button
+                          onClick={() => handleDeleteCar(car.id)}
+                          className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                          title="Șterge"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -347,6 +353,7 @@ export const Dashboard = () => {
             }}
           />
         </Modal>
+
         <Modal
           isOpen={isBookServiceOpen}
           onClose={() => setIsBookServiceOpen(false)}
@@ -360,6 +367,18 @@ export const Dashboard = () => {
             }}
           />
         </Modal>
+
+        <VehicleDetailsModal
+          isOpen={!!selectedVehicle}
+          vehicle={selectedVehicle}
+          onClose={() => setSelectedVehicle(null)}
+          onUpdate={() => {
+            fetchData(); 
+            setSelectedVehicle(null);
+
+          }}
+        />
+
       </div>
     </PageTransition>
   );
@@ -374,9 +393,7 @@ const StatCard = ({ icon, title, value, delay = 0 }: any) => (
     className="relative group bg-[#1e293b]/40 border border-white/10 p-6 rounded-2xl flex items-center gap-4 backdrop-blur-md overflow-hidden"
   >
     <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/10 to-purple-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-
     <div className="absolute inset-0 rounded-2xl ring-1 ring-white/0 group-hover:ring-white/20 transition-all duration-500"></div>
-
     <div className="p-3 bg-white/5 rounded-xl border border-white/5 shadow-inner relative z-10 group-hover:bg-blue-500/20 transition-colors duration-300">
       {icon}
     </div>
