@@ -22,4 +22,14 @@ export class VehicleModel {
         const result = await pool.query(query, [userId, modelId, vin, plate, year, imageUrl || null]);
         return result.rows[0];
     }
+
+    static async delete(vehicleId: number, userId: number) {
+        const query = `
+            DELETE FROM vehicles 
+            WHERE id = $1 AND owner_id = $2
+        `;
+        const result = await pool.query(query, [vehicleId, userId]);
+
+        return (result.rowCount || 0) > 0;
+    }
 }

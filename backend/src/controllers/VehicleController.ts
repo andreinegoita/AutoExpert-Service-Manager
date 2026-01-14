@@ -46,3 +46,26 @@ export const addVehicle = async (req: AuthRequest, res: Response) => {
     }
 };
 
+export const deleteVehicle = async (req: AuthRequest, res: Response) => {
+    try {
+        const vehicleId = parseInt(req.params.id);
+        const userId = req.user!.id; 
+
+        if (isNaN(vehicleId)) {
+            return res.status(400).json({ error: 'ID invalid' });
+        }
+
+
+        const deleted = await VehicleModel.delete(vehicleId, userId);
+
+        if (!deleted) {
+            return res.status(404).json({ error: 'Vehiculul nu a fost găsit sau nu îți aparține.' });
+        }
+
+        res.json({ message: 'Vehicul șters cu succes' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Eroare la ștergerea vehiculului' });
+    }
+};
+

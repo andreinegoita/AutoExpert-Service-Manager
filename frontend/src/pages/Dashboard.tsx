@@ -74,17 +74,27 @@ export const Dashboard = () => {
   };
 
   const handleDeleteCar = async (id: number) => {
+    // 1. ADAUGĂ LINIA ASTA:
+    console.log("ID-ul primit pentru ștergere este:", id); 
+
+    if (!id) {
+        alert("Eroare: ID-ul este invalid (undefined)!");
+        return;
+    }
+
     if (!window.confirm("Sigur vrei să ștergi această mașină?")) return;
+    
     try {
+      // Verifică URL-ul aici. Să nu ai un spațiu în plus.
       await axios.delete(`http://localhost:5000/api/vehicles/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchData();
     } catch (err) {
+      console.error(err); // Vezi eroarea completă în consolă
       alert("Nu s-a putut șterge mașina.");
     }
   };
-
   useEffect(() => {
     fetchData();
   }, [token]);
