@@ -1,4 +1,4 @@
-import { motion, Transition } from 'framer-motion'; // Am adaugat Transition aici
+import { motion, Transition } from 'framer-motion'; 
 import { ReactNode } from 'react';
 
 const pageVariants = {

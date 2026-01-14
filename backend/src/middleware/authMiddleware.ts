@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/db';
-import { AuthRequest } from '../interfaces/AppInterfaces'; // Asigură-te că importul e corect
+import { AuthRequest } from '../interfaces/AppInterfaces'; 
 
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
     let token;
@@ -12,8 +12,6 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
             
             const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
-            // AICI ERA PROBLEMA! Am adăugat "role_id" în SELECT
-            // 👇👇👇
             const result = await pool.query(
                 'SELECT id, full_name, email, role_id FROM users WHERE id = $1', 
                 [decoded.id]
@@ -23,7 +21,6 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
                 return res.status(401).json({ message: 'Utilizatorul nu mai există.' });
             }
 
-            // Atașăm utilizatorul complet (inclusiv role_id) la cerere
             req.user = result.rows[0];
             next();
 

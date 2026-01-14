@@ -47,8 +47,8 @@ export const exportAppointmentsPDF = async (req: any, res: any) => {
                 a.appointment_date, 
                 s.service_name, 
                 v.plate_number, 
-                b.name as brand_name,    -- Luăm brandul din tabela brands (alias b)
-                m.model_name,            -- Luăm modelul din tabela models (alias m)
+                b.name as brand_name,    
+                m.model_name,           
                 a.status, 
                 a.total_cost
             FROM appointments a
