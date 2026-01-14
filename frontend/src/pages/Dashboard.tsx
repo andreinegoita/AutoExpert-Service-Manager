@@ -7,7 +7,9 @@ import { CarCarousel } from "../components/CarCarousel";
 import { Modal } from "../components/Modal";
 import { AddVehicleForm } from "../components/forms/AddVehicleForm";
 import { BookServiceForm } from "../components/forms/BookServiceForm";
-import { VehicleDetailsModal } from "../pages/VehicleDetailsModal"; 
+import { VehicleDetailsModal } from "../pages/VehicleDetailsModal";
+import { AppointmentDetailsModal } from "../pages/AppointmentDetailsModal"; 
+
 import {
   BarChart,
   Bar,
@@ -90,6 +92,8 @@ export const Dashboard = () => {
   const [isAddCarOpen, setIsAddCarOpen] = useState(false);
   const [isBookServiceOpen, setIsBookServiceOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+  
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
   const handleLogout = () => {
     logout();
@@ -153,9 +157,9 @@ export const Dashboard = () => {
   }, [token]);
 
   const chartData = [
-    { name: "Ian", cost: 120 },
-    { name: "Feb", cost: 300 },
-    { name: "Mar", cost: 150 },
+    { name: "ITP", cost: stats?.itpCosts || 0 },
+    { name: "RCA", cost: stats?.rcaCosts || 0 },
+    { name: "Revizii", cost: stats?.serviceCosts || 0 },
     { name: "Total", cost: stats?.totalSpent || 0 },
   ];
 
@@ -172,7 +176,6 @@ export const Dashboard = () => {
     <PageTransition>
       <div className="min-h-screen bg-dark text-white p-4 md:p-8 font-sans">
         
-        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
@@ -366,8 +369,14 @@ export const Dashboard = () => {
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {appointments.map((app: any) => (
-              <div key={app.id} className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition">
-                <div className="flex justify-between mb-2">
+              <div
+                key={app.id}
+                onClick={() => setSelectedAppointment(app)} 
+                className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition cursor-pointer group relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 transition duration-300"></div>
+
+                <div className="flex justify-between mb-2 relative z-10">
                   <span className="font-bold text-white">{app.service_name}</span>
                   <span className={`px-2 py-1 rounded text-xs font-bold ${
                       app.status === "completed" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
@@ -375,13 +384,17 @@ export const Dashboard = () => {
                     {app.status.toUpperCase()}
                   </span>
                 </div>
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-400 text-sm relative z-10">
                   Vehicul: <span className="text-white">{app.brand} - {app.plate_number}</span>
                 </p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-400 text-sm relative z-10">
                   Data: <span className="text-white">{new Date(app.appointment_date).toLocaleDateString()}</span>
                 </p>
-                <p className="text-blue-400 font-bold mt-2">{app.total_cost} RON</p>
+                <p className="text-blue-400 font-bold mt-2 relative z-10">{app.total_cost} RON</p>
+                
+                <p className="text-[10px] text-gray-500 mt-3 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition relative z-10">
+                    Vezi detalii <Eye size={10} />
+                </p>
               </div>
             ))}
             {appointments.length === 0 && (
@@ -425,6 +438,12 @@ export const Dashboard = () => {
             fetchData(); 
             setSelectedVehicle(null); 
           }}
+        />
+        
+        <AppointmentDetailsModal
+          isOpen={!!selectedAppointment}
+          appointment={selectedAppointment}
+          onClose={() => setSelectedAppointment(null)}
         />
 
       </div>
