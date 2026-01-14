@@ -26,9 +26,57 @@ import {
   Calendar,
   RefreshCcw,
   LogOut,
-  Eye, 
+  Eye,
+  Download,       
+  AlertTriangle,  
+  CheckCircle,   
+  XCircle         
 } from "lucide-react";
 import { PageTransition } from "../components/PageTransitions";
+
+const getDocStatus = (dateString: string) => {
+  if (!dateString) return null;
+  const expiry = new Date(dateString);
+  const today = new Date();
+  
+  const diffTime = expiry.getTime() - today.getTime();
+  const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (days < 0) {
+    return { 
+      label: "EXPIRAT", 
+      color: "bg-red-500/20 text-red-400 border-red-500/30", 
+      icon: <XCircle size={10} /> 
+    };
+  }
+  if (days < 30) {
+    return { 
+      label: `${days} zile`, 
+      color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", 
+      icon: <AlertTriangle size={10} /> 
+    };
+  }
+  return { 
+    label: "Valid", 
+    color: "bg-green-500/20 text-green-400 border-green-500/30", 
+    icon: <CheckCircle size={10} /> 
+  };
+};
+
+const DocBadge = ({ type, date }: any) => {
+  const status = getDocStatus(date);
+  
+  if (!status) return null; 
+
+  return (
+    <span 
+      title={`Expiră pe: ${new Date(date).toLocaleDateString()}`}
+      className={`text-[10px] px-2 py-0.5 rounded border font-bold flex items-center gap-1 uppercase tracking-wider ${status.color}`}
+    >
+      {status.icon} {type}: {status.label}
+    </span>
+  );
+};
 
 export const Dashboard = () => {
   const { token, user, logout } = useAuth();
@@ -41,7 +89,6 @@ export const Dashboard = () => {
 
   const [isAddCarOpen, setIsAddCarOpen] = useState(false);
   const [isBookServiceOpen, setIsBookServiceOpen] = useState(false);
-  
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
 
   const handleLogout = () => {
@@ -54,18 +101,9 @@ export const Dashboard = () => {
       setLoading(true);
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      const statsRes = await axios.get(
-        "http://localhost:5000/api/dashboard-stats",
-        config
-      );
-      const carsRes = await axios.get(
-        "http://localhost:5000/api/vehicles",
-        config
-      );
-      const appRes = await axios.get(
-        "http://localhost:5000/api/appointments",
-        config
-      );
+      const statsRes = await axios.get("http://localhost:5000/api/dashboard-stats", config);
+      const carsRes = await axios.get("http://localhost:5000/api/vehicles", config);
+      const appRes = await axios.get("http://localhost:5000/api/appointments", config);
 
       setStats(statsRes.data);
       setVehicles(carsRes.data);
@@ -87,6 +125,26 @@ export const Dashboard = () => {
     } catch (err) {
       console.error(err);
       alert("Nu s-a putut șterge mașina.");
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/appointments/export-pdf', {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob', 
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Raport_Service_${new Date().toLocaleDateString()}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error(err);
+      alert("Nu s-a putut genera raportul. Asigură-te că ai istoric de service.");
     }
   };
 
@@ -113,6 +171,8 @@ export const Dashboard = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-dark text-white p-4 md:p-8 font-sans">
+        
+        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
@@ -165,9 +225,7 @@ export const Dashboard = () => {
                 title="Următoarea Revizie"
                 value={
                   stats?.nextAppointment
-                    ? new Date(
-                        stats.nextAppointment.appointment_date
-                      ).toLocaleDateString()
+                    ? new Date(stats.nextAppointment.appointment_date).toLocaleDateString()
                     : "Niciuna"
                 }
               />
@@ -181,11 +239,7 @@ export const Dashboard = () => {
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#334155"
-                    vertical={false}
-                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                   <XAxis dataKey="name" stroke="#94a3b8" />
                   <YAxis stroke="#94a3b8" />
                   <Tooltip
@@ -223,31 +277,35 @@ export const Dashboard = () => {
               </thead>
               <tbody className="text-gray-300">
                 {vehicles.map((car: any) => (
-                  <tr
-                    key={car.id}
-                    className="border-b border-white/5 hover:bg-white/5 transition"
-                  >
+                  <tr key={car.id} className="border-b border-white/5 hover:bg-white/5 transition">
                     <td className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center overflow-hidden">
+                      <div className="w-12 h-12 shrink-0 rounded-full bg-blue-500/20 flex items-center justify-center overflow-hidden border border-white/10">
                         {car.image_url ? (
                           <img
                             src={`http://localhost:5000${car.image_url}`}
                             className="w-full h-full object-cover"
                             alt="Car"
+                            onError={(e: any) => {
+                                e.target.src = "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1000&auto=format&fit=crop";
+                            }}
                           />
                         ) : (
                           <Car size={20} />
                         )}
                       </div>
                       <div>
-                        <p className="font-bold">{car.brand_name}</p>
-                        <p className="text-xs text-gray-500">
-                          {car.model_name}
-                        </p>
+                        <p className="font-bold text-base">{car.brand_name}</p>
+                        <p className="text-xs text-gray-400 mb-2">{car.model_name}</p>
+                        
+                        <div className="flex gap-2 flex-wrap">
+                             <DocBadge type="RCA" date={car.rca_expiry} />
+                             <DocBadge type="ITP" date={car.itp_expiry} />
+                             <DocBadge type="ROV" date={car.rovinieta_expiry} />
+                        </div>
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="px-3 py-1 bg-white/10 rounded-lg font-mono text-sm">
+                      <span className="px-3 py-1 bg-white/10 rounded-lg font-mono text-sm border border-white/5">
                         {car.plate_number}
                       </span>
                     </td>
@@ -293,50 +351,41 @@ export const Dashboard = () => {
           transition={{ delay: 0.2 }}
           className="bg-[#1e293b]/40 border border-white/10 rounded-3xl p-6 backdrop-blur-xl"
         >
-          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Wrench className="text-purple-400" /> Istoric Service
-          </h3>
+          <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold flex items-center gap-3">
+                <Wrench className="text-purple-400" /> Istoric Service
+              </h3>
+              
+              <button 
+                  onClick={handleExportPDF}
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl flex items-center gap-2 text-sm transition font-medium text-gray-200 hover:text-white"
+              >
+                  <Download size={16} /> Export Raport PDF
+              </button>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {appointments.map((app: any) => (
-              <div
-                key={app.id}
-                className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition"
-              >
+              <div key={app.id} className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition">
                 <div className="flex justify-between mb-2">
-                  <span className="font-bold text-white">
-                    {app.service_name}
-                  </span>
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-bold ${
-                      app.status === "completed"
-                        ? "bg-green-500/20 text-green-400"
-                        : "bg-yellow-500/20 text-yellow-400"
-                    }`}
-                  >
+                  <span className="font-bold text-white">{app.service_name}</span>
+                  <span className={`px-2 py-1 rounded text-xs font-bold ${
+                      app.status === "completed" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+                    }`}>
                     {app.status.toUpperCase()}
                   </span>
                 </div>
                 <p className="text-gray-400 text-sm">
-                  Vehicul:{" "}
-                  <span className="text-white">
-                    {app.brand} - {app.plate_number}
-                  </span>
+                  Vehicul: <span className="text-white">{app.brand} - {app.plate_number}</span>
                 </p>
                 <p className="text-gray-400 text-sm">
-                  Data:{" "}
-                  <span className="text-white">
-                    {new Date(app.appointment_date).toLocaleDateString()}
-                  </span>
+                  Data: <span className="text-white">{new Date(app.appointment_date).toLocaleDateString()}</span>
                 </p>
-                <p className="text-blue-400 font-bold mt-2">
-                  {app.total_cost} RON
-                </p>
+                <p className="text-blue-400 font-bold mt-2">{app.total_cost} RON</p>
               </div>
             ))}
             {appointments.length === 0 && (
-              <p className="text-gray-500 col-span-full text-center">
-                Nicio programare găsită.
-              </p>
+              <p className="text-gray-500 col-span-full text-center">Nicio programare găsită.</p>
             )}
           </div>
         </motion.div>
@@ -374,8 +423,7 @@ export const Dashboard = () => {
           onClose={() => setSelectedVehicle(null)}
           onUpdate={() => {
             fetchData(); 
-            setSelectedVehicle(null);
-
+            setSelectedVehicle(null); 
           }}
         />
 
