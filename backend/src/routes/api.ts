@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { login, register } from '../controllers/AuthController';
 import { addVehicle, getVehicles, deleteVehicle, updateVehicle } from '../controllers/VehicleController';
-import { createAppointment, getMyAppointments, exportAppointmentsPDF } from '../controllers/AppointmentController';
+import { createAppointment, getMyAppointments, exportAppointmentsPDF, cancelAppointment } from '../controllers/AppointmentController';
 import { getBrands, getModels, getServices } from '../controllers/DataController';
 import { protect } from '../middleware/authMiddleware';
 import { getDashboardStats } from '../controllers/StatsControlles';
@@ -40,6 +40,7 @@ router.put('/vehicles/:id', protect, upload.single('image'), updateVehicle);
 router.post('/appointments', protect, createAppointment);
 router.get('/appointments', protect, getMyAppointments);
 router.get('/appointments/export-pdf', protect, exportAppointmentsPDF);
+router.patch('/appointments/:id/cancel', protect, cancelAppointment);
 
 router.get('/services', getServices); 
 router.get('/brands', getBrands);     

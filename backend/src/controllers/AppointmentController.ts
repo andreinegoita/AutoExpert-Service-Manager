@@ -109,3 +109,29 @@ export const exportAppointmentsPDF = async (req: any, res: any) => {
         res.status(500).json({ error: 'Eroare la generarea PDF-ului' });
     }
 };
+export const cancelAppointment = async (req: any, res: any) => {
+  try {
+    const appointmentId = req.params.id;
+    const userId = req.user.id;
+
+
+    const query = `
+      UPDATE appointments
+      SET status = 'cancelled'
+      WHERE id = $1 
+      AND vehicle_id IN (SELECT id FROM vehicles WHERE owner_id = $2)
+      RETURNING *
+    `;
+
+    const result = await pool.query(query, [appointmentId, userId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Programarea nu a fost găsită sau nu ai dreptul să o anulezi." });
+    }
+
+    res.json({ message: "Programare anulată cu succes", appointment: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Eroare la anularea programării" });
+  }
+};

@@ -1,13 +1,47 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, Wrench, DollarSign, Car, CheckCircle, Clock } from "lucide-react";
+import { X, Calendar, DollarSign, Car, CheckCircle, Clock, XCircle, AlertTriangle } from "lucide-react";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast"; 
 
-export const AppointmentDetailsModal = ({ appointment, isOpen, onClose }: any) => {
+
+export const AppointmentDetailsModal = ({ appointment, isOpen, onClose, onUpdate }: any) => {
+  const { token } = useAuth();
+
   if (!isOpen || !appointment) return null;
 
-  const isCompleted = appointment.status === "completed";
-  const StatusIcon = isCompleted ? CheckCircle : Clock;
-  const statusColor = isCompleted ? "text-green-400 bg-green-500/20" : "text-yellow-400 bg-yellow-500/20";
-  const statusBorder = isCompleted ? "border-green-500/30" : "border-yellow-500/30";
+  const status = appointment.status.toLowerCase();
+  
+  let StatusIcon = Clock;
+  let statusColor = "text-yellow-400 bg-yellow-500/20 border-yellow-500/30";
+  
+  if (status === 'completed') {
+      StatusIcon = CheckCircle;
+      statusColor = "text-green-400 bg-green-500/20 border-green-500/30";
+  } else if (status === 'cancelled') {
+      StatusIcon = XCircle;
+      statusColor = "text-red-400 bg-red-500/20 border-red-500/30";
+  }
+
+
+  const handleCancel = async () => {
+    if (!window.confirm("Ești sigur că vrei să anulezi această programare?")) return;
+
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/appointments/${appointment.id}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success("Programare anulată!"); 
+      onUpdate(); 
+      onClose();  
+    } catch (error) {
+      console.error(error);
+      toast.error("Eroare la anulare.");
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -29,23 +63,22 @@ export const AppointmentDetailsModal = ({ appointment, isOpen, onClose }: any) =
 
           <div className="p-8 pt-10">
             <div className="flex flex-col items-center mb-8">
-              <div className={`p-4 rounded-2xl mb-4 ${statusColor} border ${statusBorder}`}>
+              <div className={`p-4 rounded-2xl mb-4 border ${statusColor}`}>
                 <StatusIcon size={32} />
               </div>
               <h2 className="text-2xl font-bold text-white text-center">
                 {appointment.service_name}
               </h2>
-              <p className={`mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${statusBorder} ${statusColor.replace('bg-', 'bg-opacity-10 ')}`}>
-                {appointment.status}
-              </p>
+              <span className={`mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${statusColor.replace('text-', 'text-opacity-90 ')}`}>
+                {status === 'pending' ? 'În Așteptare' : (status === 'completed' ? 'Finalizat' : 'Anulat')}
+              </span>
             </div>
 
             <div className="space-y-4">
-              
               <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
                 <div className="flex items-center gap-3 text-gray-400">
                   <Calendar size={20} className="text-blue-400" />
-                  <span>Data Programării</span>
+                  <span>Data</span>
                 </div>
                 <span className="font-bold text-white">
                   {new Date(appointment.appointment_date).toLocaleDateString('ro-RO')}
@@ -66,18 +99,31 @@ export const AppointmentDetailsModal = ({ appointment, isOpen, onClose }: any) =
               <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
                 <div className="flex items-center gap-3 text-gray-400">
                   <DollarSign size={20} className="text-green-400" />
-                  <span>Cost Total</span>
+                  <span>Cost</span>
                 </div>
                 <span className="font-bold text-2xl text-green-400">
                   {appointment.total_cost} RON
                 </span>
               </div>
-
             </div>
+            
+            {status === 'pending' && (
+              <div className="mt-8 pt-6 border-t border-white/10">
+                  <button 
+                    onClick={handleCancel}
+                    className="w-full py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition flex items-center justify-center gap-2 font-bold"
+                  >
+                    <AlertTriangle size={18} /> Anulează Programarea
+                  </button>
+                  <p className="text-center text-xs text-gray-500 mt-2">
+                    Această acțiune este ireversibilă.
+                  </p>
+              </div>
+            )}
 
-            <div className="mt-8 text-center">
+            <div className="mt-4 text-center">
               <p className="text-xs text-gray-600 font-mono">
-                ID Programare: #{appointment.id}
+                ID: #{appointment.id}
               </p>
             </div>
           </div>

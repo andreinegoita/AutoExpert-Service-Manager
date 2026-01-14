@@ -446,6 +446,16 @@ export const Dashboard = () => {
           onClose={() => setSelectedAppointment(null)}
         />
 
+        <AppointmentDetailsModal
+          isOpen={!!selectedAppointment}
+          appointment={selectedAppointment}
+          onClose={() => setSelectedAppointment(null)}
+          onUpdate={() => {
+             fetchData(); 
+
+          }}
+        />
+
       </div>
     </PageTransition>
   );
